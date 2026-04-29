@@ -80,6 +80,30 @@ The first time you press `⌃⌥⌘I` while another app is focused, macOS will
 prompt you to grant Accessibility / Input Monitoring permission so the global
 hotkey can fire. Grant it via **System Settings → Privacy & Security**.
 
+### Install for daily use
+
+Once you've run the app once via ⌘R, you have a built `iob-bar.app` bundle
+on disk that doesn't require Xcode to launch. To make it part of your
+day-to-day environment:
+
+1. **Find the bundle**: in Xcode's project navigator, expand the **Products**
+   group at the bottom → right-click `iob-bar.app` → **Show in Finder**. Or
+   navigate to `~/Library/Developer/Xcode/DerivedData/iob-bar-<hash>/Build/Products/Debug/iob-bar.app`.
+2. **Copy to /Applications/**: drag the `.app` into your Applications folder.
+3. **Auto-launch on login** (optional): **System Settings → General → Login
+   Items → click the +** under "Open at Login" → pick `iob-bar` from the
+   Applications folder.
+
+For a smaller, optimized Release-configuration build, use **Product → Archive
+→ Distribute App → Copy App** in Xcode. For personal use the Debug build
+works fine.
+
+> **Code signing note**: apps signed with a free Apple ID work indefinitely
+> on the Mac that signed them, but other Macs will see them as "unidentified
+> developer" and Gatekeeper will challenge them on first launch. To distribute
+> beyond your own machine cleanly, you need a paid Apple Developer ID
+> (~$99/year).
+
 ### Storage
 
 Doses, basal stamps, and settings live in
