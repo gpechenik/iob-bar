@@ -8,7 +8,7 @@ struct PopoverView: View {
 
     @State private var showCustomEntry = false
     @State private var customAmount: Double = 1.0
-    @State private var customDate: Date = Date()
+    @State private var customMinutesAgo: Int = 0
 
     private var settings: AppSettings { settingsStore.settings }
     private var now: Date { ticker.now }
@@ -51,7 +51,7 @@ struct PopoverView: View {
             Text(String(format: "%.1f", iob))
                 .font(.system(size: 32, weight: .semibold, design: .rounded))
                 .monospacedDigit()
-            Text("u on board")
+            Text("units on board")
                 .font(.system(size: 13))
                 .foregroundStyle(.secondary)
             Spacer()
@@ -67,7 +67,12 @@ struct PopoverView: View {
         } else {
             VStack(alignment: .leading, spacing: 4) {
                 ForEach(activeDoses) { dose in
-                    DoseRowView(dose: dose, model: settings.insulinModel, now: now)
+                    DoseRowView(
+                        dose: dose,
+                        model: settings.insulinModel,
+                        now: now,
+                        onDelete: { doseStore.remove(dose) }
+                    )
                 }
             }
         }
@@ -99,13 +104,17 @@ struct PopoverView: View {
     private var customEntryToggle: some View {
         Button {
             showCustomEntry.toggle()
-            if showCustomEntry { customDate = Date() }
+            if showCustomEntry { customMinutesAgo = 0 }
         } label: {
             Label(showCustomEntry ? "Hide custom" : "Custom amount or time",
                   systemImage: "slider.horizontal.3")
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.bordered)
+    }
+
+    private var customTimestamp: Date {
+        now.addingTimeInterval(-Double(customMinutesAgo) * 60)
     }
 
     private var customEntrySection: some View {
@@ -120,11 +129,22 @@ struct PopoverView: View {
                     .monospacedDigit()
                     .font(.system(size: 12))
             }
-            DatePicker("Time:", selection: $customDate, displayedComponents: [.date, .hourAndMinute])
-                .font(.system(size: 12))
+            HStack {
+                Text("Minutes ago:").font(.system(size: 12))
+                Stepper(value: $customMinutesAgo, in: 0...720, step: 5) {
+                    EmptyView()
+                }
+                .labelsHidden()
+                Text("\(customMinutesAgo)m")
+                    .monospacedDigit()
+                    .font(.system(size: 12))
+                Text("(\(customTimestamp.formatted(date: .omitted, time: .shortened)))")
+                    .foregroundStyle(.secondary)
+                    .font(.system(size: 11))
+            }
             Button {
-                doseStore.add(amount: customAmount, at: customDate)
-                customDate = Date()
+                doseStore.add(amount: customAmount, at: customTimestamp)
+                customMinutesAgo = 0
                 showCustomEntry = false
             } label: {
                 Text("Log dose").frame(maxWidth: .infinity)

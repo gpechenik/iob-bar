@@ -4,6 +4,9 @@ struct DoseRowView: View {
     let dose: Dose
     let model: InsulinModel
     let now: Date
+    let onDelete: () -> Void
+
+    @State private var isHovering = false
 
     private var elapsed: TimeInterval { now.timeIntervalSince(dose.timestamp) }
     private var contributing: Double { dose.amount * model.fractionRemaining(at: elapsed) }
@@ -23,7 +26,17 @@ struct DoseRowView: View {
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .monospacedDigit()
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.tertiary)
+            }
+            .buttonStyle(.plain)
+            .help("Remove this dose from the IOB calculation")
+            .opacity(isHovering ? 1 : 0)
+            .frame(width: 14)
         }
+        .contentShape(Rectangle())
+        .onHover { isHovering = $0 }
     }
 
     private var elapsedText: String {
