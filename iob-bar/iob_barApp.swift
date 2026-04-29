@@ -10,12 +10,15 @@ struct iob_barApp: App {
     @StateObject private var hotkeyBridge = HotkeyBridge()
 
     var body: some Scene {
-        MenuBarExtra(menuBarTitle) {
+        MenuBarExtra {
             PopoverView()
                 .environmentObject(settingsStore)
                 .environmentObject(doseStore)
                 .environmentObject(basalStore)
                 .environmentObject(ticker)
+        } label: {
+            Text(menuBarTitle)
+                .monospacedDigit()
         }
         .menuBarExtraAccess(isPresented: $hotkeyBridge.isPopoverPresented)
         .menuBarExtraStyle(.window)

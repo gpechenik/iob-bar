@@ -19,7 +19,7 @@ struct PopoverView: View {
 
     private var activeDoses: [Dose] {
         IOBCalculator.activeDoses(doseStore.doses, actionDuration: settings.insulinModel.actionDuration, now: now)
-            .sorted { $0.timestamp > $1.timestamp }
+            .sorted { $0.timestamp < $1.timestamp }
     }
 
     var body: some View {
