@@ -204,7 +204,7 @@ struct PopoverView: View {
                             .font(.system(size: 9))
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("not yet")
+                        Text("not logged")
                             .font(.system(size: 9))
                             .foregroundStyle(.tertiary)
                     }
