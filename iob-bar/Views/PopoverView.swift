@@ -48,7 +48,7 @@ struct PopoverView: View {
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(String(format: "%.1f", iob))
+            Text(String(format: "%.2f", iob))
                 .font(.system(size: 32, weight: .semibold, design: .rounded))
                 .monospacedDigit()
             Text("units on board")
