@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import KeyboardShortcuts
 
 /// Owns the global hotkey registration and exposes a `@Published` Bool that
