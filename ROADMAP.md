@@ -97,6 +97,12 @@ Benefits:
 - Survives device migrations via iCloud Health backup
 - Notes can persist in `HKQuantitySample.metadata`
 
+**Trigger**: until HealthKit is in place, cross-machine sync uses a manual
+symlink from inside the App Sandbox container to a synced directory (iCloud
+Drive, etc.); see the README. macOS sometimes recreates the symlink target
+during system updates. When that becomes annoying enough to merit the
+~hours of HealthKit integration work, do it then.
+
 ## iPhone port
 
 When this happens:
