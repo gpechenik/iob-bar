@@ -118,29 +118,35 @@ struct PopoverView: View {
     }
 
     private var customEntrySection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Amount:").font(.system(size: 12))
-                Stepper(value: $customAmount, in: 0.5...20, step: 0.5) {
-                    EmptyView()
+        VStack(alignment: .leading, spacing: 10) {
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 10) {
+                GridRow {
+                    Text("Dose amount")
+                        .font(.system(size: 12))
+                    Stepper(value: $customAmount, in: 0.5...20, step: 0.5) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    Text("\(customAmount, specifier: "%.1f")u")
+                        .monospacedDigit()
+                        .font(.system(size: 12))
                 }
-                .labelsHidden()
-                Text("\(customAmount, specifier: "%.1f")u")
-                    .monospacedDigit()
-                    .font(.system(size: 12))
-            }
-            HStack {
-                Text("Minutes ago:").font(.system(size: 12))
-                Stepper(value: $customMinutesAgo, in: 0...720, step: 5) {
-                    EmptyView()
+                GridRow {
+                    Text("Minutes ago")
+                        .font(.system(size: 12))
+                    Stepper(value: $customMinutesAgo, in: 0...720, step: 5) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    HStack(spacing: 6) {
+                        Text("\(customMinutesAgo)m")
+                            .monospacedDigit()
+                            .font(.system(size: 12))
+                        Text("(\(customTimestamp.formatted(date: .omitted, time: .shortened)))")
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 11))
+                    }
                 }
-                .labelsHidden()
-                Text("\(customMinutesAgo)m")
-                    .monospacedDigit()
-                    .font(.system(size: 12))
-                Text("(\(customTimestamp.formatted(date: .omitted, time: .shortened)))")
-                    .foregroundStyle(.secondary)
-                    .font(.system(size: 11))
             }
             Button {
                 doseStore.add(amount: customAmount, at: customTimestamp)
