@@ -15,6 +15,22 @@ double-dose.
 > by stress, by ambient temperature, by everything. Treat the IOB number as a
 > memory aid, not as truth. Use at your own risk.
 
+## Who this is for
+
+This app is built for **MDI (multiple daily injection) users on pens with
+half-unit dosing** — e.g., Humalog Junior KwikPen. That assumption shapes
+several design choices that might otherwise look like omissions:
+
+- Quick-add buttons are in 0.5u increments (`+0.5` / `+1.0` / `+1.5` / `+2.0`)
+- No carb counting, no bolus-wizard math
+- No pump integration (if you're on a pump, [Loop](https://github.com/LoopKit/Loop)
+  or another AID stack is what you actually want)
+- No CGM / blood-glucose display (a separate companion app for that is on
+  the [roadmap](ROADMAP.md))
+
+If you're on full-unit pens, the math still works but the quick-add buttons
+won't match your dosing granularity.
+
 ## What it does
 
 A small text item lives in your menubar showing your current insulin on board:
@@ -106,9 +122,45 @@ works fine.
 
 ### Storage
 
-Doses, basal stamps, and settings live in
-`~/Library/Application Support/iob-bar/` as plain JSON. Nothing leaves
-your machine.
+Doses, basal stamps, and settings live as plain JSON in:
+
+```
+~/Library/Containers/<bundle-id>/Data/Library/Application Support/iob-bar/
+```
+
+The App Sandbox transparently redirects the canonical Application Support
+path to a per-app container, so this is where the data actually lives. The
+`<bundle-id>` matches whatever you set during project creation (e.g.
+`graham.gg.iob-bar`). Nothing leaves your machine.
+
+#### Cross-machine sync via symlink (optional)
+
+If you want the same dose history across multiple Macs, you can symlink
+the storage directory to a synced location (iCloud Drive, Dropbox, syncthing,
+etc.). On the first Mac:
+
+```bash
+# Quit iob-bar first.
+BUNDLE_ID="graham.gg.iob-bar"  # change to yours
+SYNC_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/iob-bar"
+
+# Move existing data into the synced location:
+mv "$HOME/Library/Containers/$BUNDLE_ID/Data/Library/Application Support/iob-bar" \
+   "$SYNC_DIR"
+
+# Replace the original location with a symlink:
+ln -s "$SYNC_DIR" \
+      "$HOME/Library/Containers/$BUNDLE_ID/Data/Library/Application Support/iob-bar"
+```
+
+On a second Mac, after building and running the app once (so the container
+exists), only the second step is needed — point a fresh symlink at the same
+`$SYNC_DIR`.
+
+> macOS occasionally recreates container subdirectories during system updates
+> or when sandbox grants change. If your symlink gets clobbered, recreate it.
+> If that happens often enough to be annoying, that's the natural prompt to
+> migrate to HealthKit-backed storage — see [ROADMAP.md](ROADMAP.md).
 
 ## Keyboard shortcuts
 

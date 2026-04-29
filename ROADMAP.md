@@ -176,6 +176,43 @@ credentials, not the follower's. Three valid identifier forms accepted:
 - Email (`user@email.com`)
 - Account ID (UUID, advanced)
 
+### Show absolute time in dose rows
+
+Each active-dose row currently shows only relative time (`1h00m ago`).
+Adding the absolute clock time alongside (`1h00m ago · 9:45 PM`) would
+save the user mental arithmetic — same affordance the custom-entry section
+already provides via its "(= 9:45 PM)" hint.
+
+**Wrinkle**: the popover is 280px wide and the row layout is tight. Naively
+appending the absolute time will overflow. Resolve via either widening the
+popover to ~320px, moving to a two-line row, showing absolute time only on
+hover, or shrinking the contributing-amount text. Worth a small design pass
+when implementing.
+
+### Editable amount / minutes-ago fields in custom entry
+
+The Stepper for "Minutes ago" is fine for small adjustments but tedious
+for back-dating a couple of hours (24 clicks at the 5-minute step). Convert
+each Stepper to a TextField+Stepper hybrid so users can type a value
+directly. Same for the dose amount. ~3-character-wide fields would capture
+up to 99.5u and 999 minutes, which is plenty.
+
+### Optional toggle: hide basal section
+
+Some users won't want the basal section in the popover even when basal
+tracking is otherwise useful. Add a setting that hides the AM/PM (or daily)
+basal section without losing the basal-tracking mode itself — distinct from
+the existing `BasalTrackingMode.off` (which suppresses tracking entirely).
+
+### Cross-machine sync (symlink today, HealthKit later)
+
+The current sync story (manual symlink inside the App Sandbox container,
+documented in the README) is a bridge, not a destination. macOS occasionally
+recreates container subdirectories during system updates or when sandbox
+grants change, clobbering the symlink. The natural prompt to upgrade to
+HealthKit-backed storage is "symlink-recreation has become annoying enough
+to merit the work." See the HealthKit on macOS section above.
+
 ### Bootstrap shortcut for next time
 
 iob-bar was built scaffold-first: Swift sources in `Sources/`, then merged
