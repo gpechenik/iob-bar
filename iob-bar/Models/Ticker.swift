@@ -9,8 +9,10 @@ final class Ticker: ObservableObject {
     private var timer: Timer?
 
     init(interval: TimeInterval = 60) {
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.now = Date() }
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+            Task { @MainActor [weak self] in
+                self?.now = Date()
+            }
         }
     }
 
