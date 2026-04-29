@@ -1,0 +1,16 @@
+iob-bar
+Copyright 2026 Graham Pechenik
+
+This product includes software derived from LoopKit
+(https://github.com/LoopKit/LoopKit), Copyright LoopKit Authors,
+licensed under the Apache License, Version 2.0.
+
+Specifically, the exponential insulin pharmacokinetic model in
+Sources/Models/InsulinModel.swift is derived from LoopKit's
+ExponentialInsulinModel. The original Apache 2.0 license is
+available at:
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Modifications: simplified to a self-contained Swift struct without
+LoopKit's broader InsulinKit/LoopAlgorithm dependencies.
