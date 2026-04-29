@@ -2,65 +2,148 @@
 
 A tiny macOS menubar app that shows your current insulin on board (IOB).
 
-That's it. No graphs, no blood-sugar tracking, no carb logging. Just the number,
-and a fast way to log a dose so you don't accidentally double-dose.
+That's it. No graphs, no blood-sugar tracking, no carb logging, no notifications,
+no charts. Just the number, and a fast way to log a dose so you don't accidentally
+double-dose.
 
-## Status
+> ⚠️ **Not a medical device.** This is a personal tool built to help one
+> person remember whether they just took insulin. It is not approved by the
+> FDA or any regulatory body, makes no medical claims, and is not a substitute
+> for professional medical advice or your prescribed insulin regimen. The
+> pharmacokinetic curve is a mathematical approximation — real insulin behavior
+> varies by person, by injection site, by meal composition, by activity level,
+> by stress, by ambient temperature, by everything. Treat the IOB number as a
+> memory aid, not as truth. Use at your own risk.
 
-Pre-Xcode-setup scaffold. Source files are staged in [Sources/](Sources/) and
-will be wired into an Xcode project once Xcode is installed.
+## What it does
 
-## Design
+A small text item lives in your menubar showing your current insulin on board:
 
-- **Menubar text**: current IOB, e.g. `2.5u` (or `0.0u` when nothing is active).
-- **Click or hotkey** (`⌃⌥⌘I` by default): opens a popover with the active doses,
-  big buttons for common amounts (`+0.5` / `+1.0` / `+1.5` / `+2.0`), and a
-  basal-tracking section.
-- **Single-key shortcuts** in the popover: `1` / `2` / `3` / `4` log
-  `+0.5` / `+1.0` / `+1.5` / `+2.0`u; `Enter` repeats the last dose; `Esc`
-  closes; `m` / `e` mark AM / PM basal.
-- **Decay**: exponential pharmacokinetic model derived from LoopKit. Defaults
-  tuned for Humalog (75-min peak, 6-hour duration). Doses older than the
-  duration of action are pruned automatically.
-- **Basal tracking**: configurable — AM/PM, once-per-day, or off. Resets at
-  midnight. Visible only in the popover, never in the menubar.
-- **Storage**: JSON files in `~/Library/Application Support/iob-bar/`.
-  Nothing leaves your machine. (HealthKit integration planned for a later
-  iteration when iPhone support is added.)
+```
+2.5u
+```
 
-## Build (once Xcode is installed)
+Click it (or hit `⌃⌥⌘I` from anywhere on macOS) to drop down a popover:
 
-This project will be developed as an Xcode-managed macOS app. The Swift
-sources are pre-staged in [Sources/](Sources/) and are integrated into the
-Xcode project via the steps documented below.
+- The current IOB in big numerals
+- Every dose still active in your system, with how much each one is currently
+  contributing after pharmacokinetic decay
+- Four big quick-add buttons (`+0.5u` / `+1.0u` / `+1.5u` / `+2.0u`), with
+  keyboard shortcuts `1`–`4`
+- A custom-amount-and-time entry for when you forgot to log earlier
+- Optional AM/PM basal tracking (or once-per-day, or off entirely) that resets
+  at midnight
+- Hover over any active dose to reveal an × button that removes it from the
+  IOB calculation
 
-1. Install Xcode from the Mac App Store.
-2. Open Xcode once, accept the license, install additional components.
-3. From this directory: `open -a Xcode` and create a new project:
-   `File → New → Project → macOS → App`. Name it `iob-bar`, choose any
-   organization identifier you like (e.g. `com.yourname`), interface SwiftUI,
-   language Swift. Save into `~/.code/` so the project lives at
-   `~/.code/iob-bar/iob-bar.xcodeproj`.
+Doses older than the action-duration window (default 6 hours) are pruned
+automatically — the popover only ever shows what's actually still doing
+something.
 
-   The bundle identifier (auto-derived as `<org-id>.iob-bar`) isn't referenced
-   anywhere in this codebase — pick whatever you'll be happy with long-term.
-   Note: macOS treats the bundle ID as the app's identity, so changing it
-   later means re-granting any permissions (notably the Accessibility /
-   Input Monitoring permission required by the global hotkey).
-4. Add Swift Package dependencies via `File → Add Package Dependencies`:
-   - [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) —
-     `https://github.com/sindresorhus/KeyboardShortcuts` (global hotkey
-     registration + future settings-rebind UI).
-   - [MenuBarExtraAccess](https://github.com/orchetect/MenuBarExtraAccess) —
-     `https://github.com/orchetect/MenuBarExtraAccess` (exposes a Bool
-     binding for `MenuBarExtra`'s popover visibility, so the global hotkey
-     can programmatically toggle the popover open).
-5. Drag the contents of [Sources/](Sources/) into the project navigator,
-   replacing the auto-generated `iob_barApp.swift` and `ContentView.swift`.
-6. In the target's Info tab, set `LSUIElement` (Application is agent) to `YES`
-   so the app runs as a menubar-only agent without a Dock icon.
-7. ⌘R to build and run.
+## How the math works
+
+The decay curve is the modern exponential model used by [LoopKit][loopkit],
+parameterized by peak activity time and total action duration. Default
+parameters target Humalog (75-min peak, 6-hour duration); to use another rapid-
+acting insulin preset, edit [`Settings.swift`][settings-swift] (a settings UI
+is on the [roadmap](ROADMAP.md)).
+
+Total IOB at any moment is `sum(dose_i × fractionRemaining_i(elapsed_i))`,
+where `fractionRemaining` is the biexponential pharmacokinetic curve. The
+implementation is in [`InsulinModel.swift`][insulin-model], derived from
+LoopKit's `ExponentialInsulinModel` under Apache 2.0; see [NOTICE](NOTICE).
+
+## Build and run
+
+### Requirements
+
+- macOS Sonoma (14.0) or later
+- Xcode 15 or later (free from the Mac App Store)
+- A free Apple ID for local code signing — no paid Developer account is
+  required for personal use
+
+### Steps
+
+```bash
+git clone https://github.com/gpechenik/iob-bar.git
+cd iob-bar
+open iob-bar.xcodeproj
+```
+
+In Xcode:
+
+1. Click the project root in the navigator → select the `iob-bar` target
+2. In the **Signing & Capabilities** tab, set **Team** to your Apple ID
+3. ⌘R to build and run
+
+The first time you press `⌃⌥⌘I` while another app is focused, macOS will
+prompt you to grant Accessibility / Input Monitoring permission so the global
+hotkey can fire. Grant it via **System Settings → Privacy & Security**.
+
+### Storage
+
+Doses, basal stamps, and settings live in
+`~/Library/Application Support/iob-bar/` as plain JSON. Nothing leaves
+your machine.
+
+## Keyboard shortcuts
+
+### Global
+
+| Combo | Action |
+|---|---|
+| `⌃⌥⌘I` | Toggle the popover from anywhere |
+
+### In the popover
+
+| Key | Action |
+|---|---|
+| `1` | Log +0.5u |
+| `2` | Log +1.0u |
+| `3` | Log +1.5u |
+| `4` | Log +2.0u |
+| `m` | Toggle AM basal as logged (in AM/PM mode) |
+| `e` | Toggle PM basal as logged (in AM/PM mode) |
+| `b` | Toggle daily basal (in once-per-day mode) |
+| `⌘↩` | Log the custom-entry dose (when expanded) |
+| `Esc` | Close the popover |
+| `⌘Q` | Quit the app |
+
+## Design philosophy
+
+The discipline is *just IOB, nothing else*. Other diabetes apps that exist
+have all gone overboard — graphs, carb counting, BG correlation, predictions,
+dashboards, notifications, push reminders, social features. This one resists
+that pressure on purpose. If you want any of those features, fork it.
+
+Why? Because in daily use, the question is almost always one of:
+*"Did I just take insulin or did I imagine that?"* A tool that answers that
+question in two clicks beats one that answers it in twelve clicks plus a
+dashboard.
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned future work, including iPhone/widget
+port, settings UI, HealthKit integration, and a separate-but-related blood
+glucose menubar app.
+
+## Acknowledgments
+
+- [**LoopKit**][loopkit] — the canonical open-source diabetes framework
+  in the Apple ecosystem; source of the exponential pharmacokinetic model
+  used here. Apache 2.0; attribution in [NOTICE](NOTICE).
+- [**KeyboardShortcuts**][keyboardshortcuts] by Sindre Sorhus — global
+  hotkey registration with built-in rebind UI machinery. MIT.
+- [**MenuBarExtraAccess**][menubarextraaccess] by orchetect — programmatic
+  control of `MenuBarExtra`'s popover visibility, used here to let the global
+  hotkey toggle the popover. MIT.
 
 ## License
 
-[MIT](LICENSE). Portions derived from LoopKit (Apache 2.0); see [NOTICE](NOTICE).
+[MIT](LICENSE).
+
+[loopkit]: https://github.com/LoopKit/LoopKit
+[keyboardshortcuts]: https://github.com/sindresorhus/KeyboardShortcuts
+[menubarextraaccess]: https://github.com/orchetect/MenuBarExtraAccess
+[insulin-model]: iob-bar/Models/InsulinModel.swift
+[settings-swift]: iob-bar/Models/Settings.swift
