@@ -65,6 +65,26 @@ dropping out of `MenuBarExtra` entirely and using `NSStatusItem` directly.
 That's a real refactor (~50–150 lines, lose `MenuBarExtraAccess` benefits,
 gain full layout control). Worth doing only if the halo bothers daily use.
 
+### Launch at login
+
+After copying `iob-bar.app` to `/Applications/`, auto-launch is currently a
+manual step (System Settings → General → Login Items → +). A first-class
+in-app toggle would use `SMAppService.mainApp.register()` (macOS 13+):
+
+- Add a "Launch at login" toggle in the (planned) Settings UI
+- Bind to `SMAppService.mainApp.status == .enabled`
+- Toggle on: `try SMAppService.mainApp.register()`
+- Toggle off: `try SMAppService.mainApp.unregister()`
+
+~10–20 lines once the Settings UI exists.
+
+### v1 binary size baseline
+
+For regression watching: v1 Debug build is **2.3MB unzipped / 564KB zipped**.
+Release would be smaller. If a future change significantly inflates this
+(e.g. adding a heavy framework dependency), that's worth noticing — staying
+small is part of the design philosophy, not just an accident.
+
 ### HealthKit on macOS
 
 HealthKit availability for native macOS apps has expanded across recent
@@ -149,6 +169,26 @@ credentials, not the follower's. Three valid identifier forms accepted:
 - Phone number (`+11234567890`)
 - Email (`user@email.com`)
 - Account ID (UUID, advanced)
+
+### Bootstrap shortcut for next time
+
+iob-bar was built scaffold-first: Swift sources in `Sources/`, then merged
+into Xcode's auto-generated project via `mv` and `git mv`. It worked but
+required a directory-rename dance to dodge Xcode's "folder must not exist"
+wizard behavior, plus several rounds of "fix the first build" import
+errors that wouldn't have surfaced if I'd been able to compile as I wrote.
+
+For bg-bar (or any next Mac project), consider either:
+
+- [**XcodeGen**](https://github.com/yonaskolb/XcodeGen) — describe the
+  project structure in YAML, generate `.xcodeproj` on demand. Standard tool
+  in larger iOS/Mac codebases; cuts the bootstrap to "create folder + write
+  Package.yml + run xcodegen."
+- **Have Claude write the `.pbxproj` directly** — it's editable text (Apple's
+  legacy ASCII plist format) and Claude can produce one matching Xcode's
+  auto-generated structure. Brittle but works for small projects.
+
+Either avoids the manual merge step.
 
 ### Reference repos (all starred 2026-04-28)
 
