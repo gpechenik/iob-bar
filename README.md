@@ -37,9 +37,16 @@ Xcode project via the steps documented below.
 1. Install Xcode from the Mac App Store.
 2. Open Xcode once, accept the license, install additional components.
 3. From this directory: `open -a Xcode` and create a new project:
-   `File → New → Project → macOS → App`. Name it `iob-bar`, organization
-   identifier `law.calyx`, interface SwiftUI, language Swift. Save into
-   `~/.code/` so the project lives at `~/.code/iob-bar/iob-bar.xcodeproj`.
+   `File → New → Project → macOS → App`. Name it `iob-bar`, choose any
+   organization identifier you like (e.g. `com.yourname`), interface SwiftUI,
+   language Swift. Save into `~/.code/` so the project lives at
+   `~/.code/iob-bar/iob-bar.xcodeproj`.
+
+   The bundle identifier (auto-derived as `<org-id>.iob-bar`) isn't referenced
+   anywhere in this codebase — pick whatever you'll be happy with long-term.
+   Note: macOS treats the bundle ID as the app's identity, so changing it
+   later means re-granting any permissions (notably the Accessibility /
+   Input Monitoring permission required by the global hotkey).
 4. Add Swift Package dependencies via `File → Add Package Dependencies`:
    - [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) —
      `https://github.com/sindresorhus/KeyboardShortcuts` (global hotkey
